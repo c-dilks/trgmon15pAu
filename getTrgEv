@@ -1,0 +1,63 @@
+#!/bin/tcsh
+
+set default=200
+
+if ( ! ($?BEAM) ) then
+  echo "BEAM env variable not set!"
+  setenv BEAM $default
+  echo "Defaulting to BEAM=${BEAM}"
+endif
+
+set runtype="pAu200|pAl200"
+rm *.dat
+
+
+# obtain data from online
+echo "downloading data..."
+mysql --host onldb2.starp.bnl.gov --port 3501 RunLog -e\
+  "SELECT trgSetupName,runNumber,startRunTime,endRunTime FROM runDescriptor"\
+  > runDescriptor.dat
+mysql --host onldb2.starp.bnl.gov --port 3501 RunLog -e\
+  "SELECT runNumber,blueEnergy,blueFillNumber FROM beamInfo"\
+  > beamInfo.dat
+foreach trg ( "FMS-JP0" "FMS-JP1" "FMS-JP2" "FMS-lg-bs1" "FMS-lg-bs2" "FMS-lg-bs3" "FMS-sm-bs1" "FMS-sm-bs2" "FMS-sm-bs3" "FMS-DiBS" "FMS-DiJP" "FMS-LED" "BBCMB" "ZDCMB-trgonly" "VPDMB-novtx")
+  mysql --host onldb2.starp.bnl.gov --port 3501 RunLog -e\
+  "SELECT runNumber,numberOfEvents,prescale FROM l0TriggerSet WHERE name='${trg}'"\
+  > $trg.dat
+  echo " ${trg} triggers obtained"
+end
+
+echo "building run number list..."
+grep -E $runtype runDescriptor.dat | awk '{print $2" "$3" "$4" "$1}' > runlist.dat
+
+
+echo "building trigger table..."
+touch trigger.dat
+set iter = 0
+foreach line ( "`cat runlist.dat`" )
+  set argv = ( $line )
+  set rn = $1
+  @ t = $3 - $2
+  set type = $4
+  set E = `grep $rn beamInfo.dat | head -n1 | awk '{print $2}'`
+  set fill = `grep $rn beamInfo.dat | head -n1 | awk '{print $3}'`
+  set day = `echo $rn | cut -c3-5`
+  set run = `echo $rn | cut -c6-8`
+  foreach trg ( "FMS-JP0" "FMS-JP1" "FMS-JP2" "FMS-lg-bs1" "FMS-lg-bs2" "FMS-lg-bs3" "FMS-sm-bs1" "FMS-sm-bs2" "FMS-sm-bs3" "FMS-DiBS" "FMS-DiJP" "FMS-LED" "BBCMB" "ZDCMB-trgonly" "VPDMB-novtx")
+    set tmp = `grep $rn $trg.dat | awk '{print $2" "$3}'`
+    set trg2 = `echo $trg | sed 's/-//g'`
+    set $trg2 = "$tmp"
+    if ( "$tmp" == "" ) set $trg2 = "0 0"
+  end
+
+  if ( "$FMSJP2" == "0 0" ) continue
+
+  echo "$iter $rn $day $run $type $fill $E $t $FMSJP0 $FMSJP1 $FMSJP2 $FMSlgbs1 $FMSlgbs2 $FMSlgbs3 $FMSsmbs1 $FMSsmbs2 $FMSsmbs3 $FMSDiBS $FMSDiJP $FMSLED $BBCMB $ZDCMBtrgonly $VPDMBnovtx" >> trigger.dat
+  echo " $rn"
+  @ iter++
+end
+
+#echo "downloading shift log..."
+#mysql --host onldb.starp.bnl.gov --port 3501 ShiftLog -e\
+  #"SELECT runNumber,comment FROM Entry" > shiftLog.dat
+#echo "all data obtained"

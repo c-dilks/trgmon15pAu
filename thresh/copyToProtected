@@ -1,0 +1,11 @@
+#!/bin/tcsh
+
+set default=200
+
+if ( ! ($?BEAM) ) then
+  echo "BEAM env variable not set!"
+  setenv BEAM $default
+  echo "Defaulting to BEAM=${BEAM}"
+endif
+
+cp -v th_plots.pdf /afs/rhic/star/doc_protected/www/docp11/spin/dilks/trgmon15pAu/$BEAM/

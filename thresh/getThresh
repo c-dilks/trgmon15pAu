@@ -1,0 +1,7 @@
+#!/bin/bash
+
+root -b -q RunIndex.C
+./loopThresh
+root -b -q BuildThreshTree.C
+root -b -q DrawThreshPlots.C
+./copyToProtected

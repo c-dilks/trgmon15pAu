@@ -1,0 +1,259 @@
+#!/bin/tcsh
+
+set default=200
+
+if ( ! ($?BEAM) ) then
+  echo "BEAM env variable not set!"
+  setenv BEAM $default
+  echo "Defaulting to BEAM=${BEAM}"
+endif
+
+set fn=$1
+set sh=$2
+
+if( ${sh} == "1") then
+  set align = "center"
+  set valign = "middle"
+else
+  set align = "left"
+  set valign = "top"
+endif
+
+touch $fn
+rm $fn
+touch $fn
+
+echo "building ${fn}..."
+
+echo "<html>" >> $fn
+echo "<head><title>Run List</title></head>" >> $fn
+echo "<body bgcolor=#CCFFCC>" >> $fn
+
+
+echo "<a href=../../trgmon12/200/${fn}>R12:pp200</a>" >> $fn
+echo "&nbsp;-&nbsp;<a href=../../trgmon12/500/${fn}>R12:pp510</a>" >> $fn
+echo "&nbsp;-&nbsp;<a href=../../trgmon13/500/${fn}>R13:pp510</a>" >> $fn
+echo "&nbsp;-&nbsp;<a href=../../trgmon15/200/${fn}>R15:pp200</a>" >> $fn
+echo "&nbsp;-&nbsp;R15:pAu200" >> $fn
+echo "&nbsp;-&nbsp;<a href=../../trgmon16/200/${fn}>R16:pAuAu</a>" >> $fn
+echo "<br /><br />" >> $fn
+  
+
+if( ${sh} == "1") then
+  echo "Run List" >> $fn
+  #echo "&nbsp;-&nbsp;<a href=shiftlong.html>Shift Log (long)</a>" >> $fn
+  #echo "&nbsp;-&nbsp;<a href=shiftshort.html>Shift Log (short)</a>" >> $fn
+else if( ${sh} == "2") then
+  echo "<a href=runs.html>Run List</a>" >> $fn
+  echo "&nbsp;-&nbsp;Shift Log (long)" >> $fn
+  echo "&nbsp;-&nbsp;<a href=shiftshort.html>Shift Log (short)</a>" >> $fn
+else
+  echo "<a href=runs.html>Run List</a>" >> $fn
+  echo "&nbsp;-&nbsp;<a href=shiftlong.html>Shift Log (long)</a>" >> $fn
+  echo "&nbsp;-&nbsp;Shift Log (short)" >> $fn
+endif
+echo "<br /><br /><a href=trigger.html>Trigger Plots</a>" >> $fn
+echo "<br /><a href=#bad>Go to Bad Runs</a>" >> $fn
+
+set mb=`head -n1 mb_select`
+
+if( ${sh} == "1" ) then
+  echo "<br /><br />failcode bits (counted from left to right):<br />" >> $fn
+  echo "bits 1-4: [on_exclusion_list or bad_epoch] [$mb=0] [nTrig<50] [t<180]<br />" >> $fn
+  echo "bits 5-8: [JP0_out] [JP1_out] [JP2_out] [LgBS1_out]<br />" >> $fn
+  echo "bits 9-12: [LgBS2_out] [LgBS3_out] [SmBS1_out] [SmBS2_out]<br />" >> $fn
+  echo "bits 12-16: [SmBS3_out] [DiBS_out] [DiJP_out] [unused]<br />" >> $fn
+endif
+
+echo "<br /><br /><b>Good Runs:</b> <a href=goodruns.dat>(text format)</a><a name=good><br />" >> $fn
+
+echo "<table border=1 cellspacing=0>" >> $fn
+set counter = 0
+foreach line ( "`cat goodruns.dat`" )
+  set rn = `echo "$line" | awk '{print $1}'`
+  @ counter++
+  @ mod = $counter % 15
+  if ( ${sh} == "1" ) then
+    set ii = `echo "$line" | awk '{print $2}'`
+    set fill = `echo "$line" | awk '{print $3}'`
+    set tt = `echo "$line" | awk '{print $4}'`
+    set jp0 = `echo "$line" | awk '{print $5" "$6}'`
+    set jp1 = `echo "$line" | awk '{print $7" "$8}'`
+    set jp2 = `echo "$line" | awk '{print $9" "$10}'`
+    set lgbs1 = `echo "$line" | awk '{print $11" "$12}'`
+    set lgbs2 = `echo "$line" | awk '{print $13" "$14}'`
+    set lgbs3 = `echo "$line" | awk '{print $15" "$16}'`
+    set smbs1 = `echo "$line" | awk '{print $17" "$18}'`
+    set smbs2 = `echo "$line" | awk '{print $19" "$20}'`
+    set smbs3 = `echo "$line" | awk '{print $21" "$22}'`
+    set dibs = `echo "$line" | awk '{print $23" "$24}'`
+    set dijp = `echo "$line" | awk '{print $25" "$26}'`
+    set led = `echo "$line" | awk '{print $27" "$28}'`
+    set bbcmb = `echo "$line" | awk '{print $29" "$30}'`
+    set zdcmb = `echo "$line" | awk '{print $31" "$32}'`
+    set vpdmb = `echo "$line" | awk '{print $33" "$34}'`
+    set by = `echo "$line" | awk '{print $35}'`
+    set typ = `echo "$line" | awk '{print $36}'`
+    set by1 = `echo ${by} | cut -c1-4`
+    set by2 = `echo ${by} | cut -c5-8`
+    set by3 = `echo ${by} | cut -c9-12`
+    set by4 = `echo ${by} | cut -c13-16`
+  endif
+  if ( ${rn} == "" || ${rn} == "entries" ) break
+  if( ${mod} == "1" && ${sh} == "1" ) then
+    echo "<tr align=${align} valign=${valign} bgcolor=#AAAAAA>" >> $fn
+    echo "<td><b>Run Number</b></td><td><b>RL</b></td><td><b>SL</b></td>" >> $fn
+    echo "<td><b>i</b></td>" >> $fn
+    echo "<td><b>fill</b></td>" >> $fn
+    echo "<td><b>config</b></td>" >> $fn
+    echo "<td><b>t</b></td>" >> $fn
+    echo "<td><b>failcode</b></td>" >> $fn
+    echo "<td><b>JP0</b></td>" >> $fn
+    echo "<td><b>JP1</b></td>" >> $fn
+    echo "<td><b>JP2</b></td>" >> $fn
+    echo "<td><b>LgBS1</b></td>" >> $fn
+    echo "<td><b>LgBS2</b></td>" >> $fn
+    echo "<td><b>LgBS3</b></td>" >> $fn
+    echo "<td><b>SmBS1</b></td>" >> $fn
+    echo "<td><b>SmBS2</b></td>" >> $fn
+    echo "<td><b>SmBS3</b></td>" >> $fn
+    echo "<td><b>DiBS</b></td>" >> $fn
+    echo "<td><b>DiJP</b></td>" >> $fn
+    echo "<td><b>LED</b></td>" >> $fn
+    echo "<td><b>BBCMB</b></td>" >> $fn
+    echo "<td><b>ZDCMB</b></td>" >> $fn
+    echo "<td><b>VPDMB</b></td>" >> $fn
+    echo "</tr>" >> $fn
+  endif
+  echo "<tr align=${align} valign=${valign} bgcolor=#EAEAEA>" >> $fn
+  echo "<td>${rn}</td>" >> $fn
+  echo "<td><a href=http://online.star.bnl.gov/RunLog/index.php?r=${rn}>RL</a></td>" >> $fn
+  echo "<td>" >> $fn
+  if( ${sh} == "1") then
+    echo "<a href=http://online.star.bnl.gov/apps/shiftLog2015/logForFullTextSearch.jsp?text=${rn}>SL</a></td>" >> $fn
+    echo "<td>${ii}</td>" >> $fn
+    echo "<td>${fill}</td>" >> $fn
+    echo "<td>${typ}</td>" >> $fn
+    echo "<td>${tt}</td>" >> $fn
+    echo "<td>${by1}.${by2}.${by3}.${by4}</td>" >> $fn
+    echo "<td>${jp0}</td>" >> $fn
+    echo "<td>${jp1}</td>" >> $fn
+    echo "<td>${jp2}</td>" >> $fn
+    echo "<td>${lgbs1}</td>" >> $fn
+    echo "<td>${lgbs2}</td>" >> $fn
+    echo "<td>${lgbs3}</td>" >> $fn
+    echo "<td>${smbs1}</td>" >> $fn
+    echo "<td>${smbs2}</td>" >> $fn
+    echo "<td>${smbs3}</td>" >> $fn
+    echo "<td>${dibs}</td>" >> $fn
+    echo "<td>${dijp}</td>" >> $fn
+    echo "<td>${led}</td>" >> $fn
+    echo "<td>${bbcmb}</td>" >> $fn
+    echo "<td>${zdcmb}</td>" >> $fn
+    echo "<td>${vpdmb}" >> $fn
+  else if( ${sh} == "2") then
+    #grep $rn shiftLog.dat | awk '{print substr($0, index($0,$2))}' | sed 's/\\n/<br \/>/g' >> $fn
+  else
+    #grep $rn shiftLog.dat | awk '{print substr($0, index($0,$2))}' | sed 's/\\n/<br \/>/g;s/http.*$//g' >> $fn
+  endif
+  echo "</td>" >> $fn
+end
+
+echo "</table>" >> $fn
+echo "<br /><br /><br /><br /><b><a name=bad>Bad Runs:</a></b> <a href=badruns.dat>(text format)</a><br />" >> $fn
+set counter=0
+
+echo "<table border=1 cellspacing=0>" >> $fn
+foreach line ( "`cat badruns.dat`" )
+  set rn = `echo "$line" | awk '{print $1}'`
+  @ counter++
+  @ mod = $counter % 15
+  if ( ${sh} == "1" ) then
+    set ii = `echo "$line" | awk '{print $2}'`
+    set fill = `echo "$line" | awk '{print $3}'`
+    set tt = `echo "$line" | awk '{print $4}'`
+    set jp0 = `echo "$line" | awk '{print $5" "$6}'`
+    set jp1 = `echo "$line" | awk '{print $7" "$8}'`
+    set jp2 = `echo "$line" | awk '{print $9" "$10}'`
+    set lgbs1 = `echo "$line" | awk '{print $11" "$12}'`
+    set lgbs2 = `echo "$line" | awk '{print $13" "$14}'`
+    set lgbs3 = `echo "$line" | awk '{print $15" "$16}'`
+    set smbs1 = `echo "$line" | awk '{print $17" "$18}'`
+    set smbs2 = `echo "$line" | awk '{print $19" "$20}'`
+    set smbs3 = `echo "$line" | awk '{print $21" "$22}'`
+    set dibs = `echo "$line" | awk '{print $23" "$24}'`
+    set dijp = `echo "$line" | awk '{print $25" "$26}'`
+    set led = `echo "$line" | awk '{print $27" "$28}'`
+    set bbcmb = `echo "$line" | awk '{print $29" "$30}'`
+    set zdcmb = `echo "$line" | awk '{print $31" "$32}'`
+    set vpdmb = `echo "$line" | awk '{print $33" "$34}'`
+    set by = `echo "$line" | awk '{print $35}'`
+    set typ = `echo "$line" | awk '{print $36}'`
+    set by1 = `echo ${by} | cut -c1-4`
+    set by2 = `echo ${by} | cut -c5-8`
+    set by3 = `echo ${by} | cut -c9-12`
+    set by4 = `echo ${by} | cut -c13-16`
+  endif
+  if ( ${rn} == "" || ${rn} == "entries" ) break
+  if( ${mod} == "1" && ${sh} == "1" ) then
+    echo "<tr align=${align} valign=${valign} bgcolor=#AAAAAA>" >> $fn
+    echo "<td><b>Run Number</b></td><td><b>RL</b></td><td><b>SL</b></td>" >> $fn
+    echo "<td><b>i</b></td>" >> $fn
+    echo "<td><b>fill</b></td>" >> $fn
+    echo "<td><b>config</b></td>" >> $fn
+    echo "<td><b>t</b></td>" >> $fn
+    echo "<td><b>failcode</b></td>" >> $fn
+    echo "<td><b>JP0</b></td>" >> $fn
+    echo "<td><b>JP1</b></td>" >> $fn
+    echo "<td><b>JP2</b></td>" >> $fn
+    echo "<td><b>LgBS1</b></td>" >> $fn
+    echo "<td><b>LgBS2</b></td>" >> $fn
+    echo "<td><b>LgBS3</b></td>" >> $fn
+    echo "<td><b>SmBS1</b></td>" >> $fn
+    echo "<td><b>SmBS2</b></td>" >> $fn
+    echo "<td><b>SmBS3</b></td>" >> $fn
+    echo "<td><b>DiBS</b></td>" >> $fn
+    echo "<td><b>DiJP</b></td>" >> $fn
+    echo "<td><b>LED</b></td>" >> $fn
+    echo "<td><b>BBCMB</b></td>" >> $fn
+    echo "<td><b>ZDCMB</b></td>" >> $fn
+    echo "<td><b>VPDMB</b></td>" >> $fn
+    echo "</tr>" >> $fn
+  endif
+  echo "<tr align=${align} valign=${valign} bgcolor=#EAEAEA>" >> $fn
+  echo "<td>${rn}</td>" >> $fn
+  echo "<td><a href=http://online.star.bnl.gov/RunLog/index.php?r=${rn}>RL</a></td>" >> $fn
+  echo "<td>" >> $fn
+  if( ${sh} == "1") then
+    echo "<a href=http://online.star.bnl.gov/apps/shiftLog2015/logForFullTextSearch.jsp?text=${rn}>SL</a></td>" >> $fn
+    echo "<td>${ii}</td>" >> $fn
+    echo "<td>${fill}</td>" >> $fn
+    echo "<td>${typ}</td>" >> $fn
+    echo "<td>${tt}</td>" >> $fn
+    echo "<td>${by1}.${by2}.${by3}.${by4}</td>" >> $fn
+    echo "<td>${jp0}</td>" >> $fn
+    echo "<td>${jp1}</td>" >> $fn
+    echo "<td>${jp2}</td>" >> $fn
+    echo "<td>${lgbs1}</td>" >> $fn
+    echo "<td>${lgbs2}</td>" >> $fn
+    echo "<td>${lgbs3}</td>" >> $fn
+    echo "<td>${smbs1}</td>" >> $fn
+    echo "<td>${smbs2}</td>" >> $fn
+    echo "<td>${smbs3}</td>" >> $fn
+    echo "<td>${dibs}</td>" >> $fn
+    echo "<td>${dijp}</td>" >> $fn
+    echo "<td>${led}</td>" >> $fn
+    echo "<td>${bbcmb}</td>" >> $fn
+    echo "<td>${zdcmb}</td>" >> $fn
+    echo "<td>${vpdmb}" >> $fn
+  else if( ${sh} == "2") then
+    #grep $rn shiftLog.dat | awk '{print substr($0, index($0,$2))}' | sed 's/\\n/<br \/>/g' >> $fn
+  else
+    #grep $rn shiftLog.dat | awk '{print substr($0, index($0,$2))}' | sed 's/\\n/<br \/>/g;s/http.*$//g' >> $fn
+  endif
+  echo "</td>" >> $fn
+end
+
+echo "</table>" >> $fn
+echo "</body>" >> $fn
+echo "</html>" >> $fn

@@ -1,0 +1,14 @@
+#!/bin/tcsh
+
+set default=200
+
+if ( ! ($?BEAM) ) then
+  echo "BEAM env variable not set!"
+  setenv BEAM $default
+  echo "Defaulting to BEAM=${BEAM}"
+endif
+
+mv ${BEAM}/* ./
+./mkHTML
+./copyToProtected
+

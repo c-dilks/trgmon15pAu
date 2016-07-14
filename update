@@ -1,0 +1,9 @@
+#!/bin/bash
+
+export BEAM=200
+./getTrgEv
+./mkHTML
+./copyToProtected
+pushd thresh > /dev/null
+./getThresh
+popd > /dev/null

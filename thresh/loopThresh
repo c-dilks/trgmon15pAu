@@ -1,0 +1,19 @@
+#!/bin/bash
+# gets trigger threshholds for a list of run numbers
+
+mkdir -p trgfiles
+mkdir -p thfiles
+
+> thresh.dat
+while read line; do
+  runnum=$(echo $line | awk '{print $1}')
+  index=$(echo $line | awk '{print $2}')
+  sqrts=$(echo $line | awk '{print $3}')
+  download=$(echo $line | awk '{print $4}')
+  if [ $download -eq 1 ]; then
+    ./triggerThresholds $runnum
+    mv trg_$runnum trgfiles/
+    mv th_$runnum thfiles/
+  fi
+  ./appendThreshFile $runnum $index $sqrts
+done < index.dat

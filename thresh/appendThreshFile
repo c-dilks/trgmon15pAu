@@ -1,0 +1,70 @@
+#!/bin/bash
+# takes results of triggerThresholds and writes them to a
+# file called "thresh.dat"
+
+if [ $# -eq 3 ]; then
+  runnum=$1
+  index=$2
+  sqrts=$3
+else
+  echo "usage: $0 [run number] [index number] [sqrt(s)]" >&2
+  exit 1
+fi
+
+fname="thfiles/th_$runnum"
+
+JP0=$(grep "FMS-JP0" $fname | awk '{print $2}')
+JP1=$(grep "FMS-JP1" $fname | awk '{print $2}')
+JP2=$(grep "FMS-JP2" $fname | awk '{print $2}')
+LBitSel=$(grep "FMSlarge-BitSelect" $fname | awk '{print $2}')
+LBS1=$(grep "FMSlarge-BS-th1" $fname | awk '{print $2}')
+LBS2=$(grep "FMSlarge-BS-th2" $fname | awk '{print $2}')
+LBS3=$(grep "FMSlarge-BS-th3" $fname | awk '{print $2}')
+SBitSel=$(grep "FMSsmall-BitSelect" $fname | awk '{print $2}')
+SBS1=$(grep "FMSsmall-BS-th1" $fname | awk '{print $2}')
+SBS2=$(grep "FMSsmall-BS-th2" $fname | awk '{print $2}')
+SBS3=$(grep "FMSsmall-BS-th3" $fname | awk '{print $2}')
+
+JP0_def=$(grep "FMS-JP0" $fname | awk '{print $3}')
+JP1_def=$(grep "FMS-JP1" $fname | awk '{print $3}')
+JP2_def=$(grep "FMS-JP2" $fname | awk '{print $3}')
+LBitSel_def=$(grep "FMSlarge-BitSelect" $fname | awk '{print $3}')
+LBS1_def=$(grep "FMSlarge-BS-th1" $fname | awk '{print $3}')
+LBS2_def=$(grep "FMSlarge-BS-th2" $fname | awk '{print $3}')
+LBS3_def=$(grep "FMSlarge-BS-th3" $fname | awk '{print $3}')
+SBitSel_def=$(grep "FMSsmall-BitSelect" $fname | awk '{print $3}')
+SBS1_def=$(grep "FMSsmall-BS-th1" $fname | awk '{print $3}')
+SBS2_def=$(grep "FMSsmall-BS-th2" $fname | awk '{print $3}')
+SBS3_def=$(grep "FMSsmall-BS-th3" $fname | awk '{print $3}')
+
+
+if [ $JP0 -eq -1 ]; then JP0=$JP0_def; fi
+if [ $JP1 -eq -1 ]; then JP1=$JP1_def; fi
+if [ $JP2 -eq -1 ]; then JP2=$JP2_def; fi
+if [ $LBitSel -eq -1 ]; then LBitSel=$LBitSel_def; fi
+if [ $LBS1 -eq -1 ]; then LBS1=$LBS1_def; fi
+if [ $LBS2 -eq -1 ]; then LBS2=$LBS2_def; fi
+if [ $LBS3 -eq -1 ]; then LBS3=$LBS3_def; fi
+if [ $SBitSel -eq -1 ]; then SBitSel=$SBitSel_def; fi
+if [ $SBS1 -eq -1 ]; then SBS1=$SBS1_def; fi
+if [ $SBS2 -eq -1 ]; then SBS2=$SBS2_def; fi
+if [ $SBS3 -eq -1 ]; then SBS3=$SBS3_def; fi
+
+write=1
+
+if [ -z $JP0 ]; then write=0; fi
+if [ -z $JP1 ]; then write=0; fi
+if [ -z $JP2 ]; then write=0; fi
+if [ -z $LBitSel ]; then write=0; fi
+if [ -z $LBS1 ]; then write=0; fi
+if [ -z $LBS2 ]; then write=0; fi
+if [ -z $LBS3 ]; then write=0; fi
+if [ -z $SBitSel ]; then write=0; fi
+if [ -z $SBS1 ]; then write=0; fi
+if [ -z $SBS2 ]; then write=0; fi
+if [ -z $SBS3 ]; then write=0; fi
+
+if [ $write -eq 1 ]; then
+  echo "$runnum $index $sqrts $JP0 $JP1 $JP2 $LBitSel $LBS1 $LBS2 $LBS3 $SBitSel $SBS1 $SBS2 $SBS3"\
+    >> thresh.dat
+fi

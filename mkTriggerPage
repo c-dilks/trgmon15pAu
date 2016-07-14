@@ -1,0 +1,93 @@
+#!/bin/tcsh
+
+echo "building trigger.html..."
+
+set default=200
+
+if ( ! ($?BEAM) ) then
+  echo "BEAM env variable not set!"
+  setenv BEAM $default
+  echo "Defaulting to BEAM=${BEAM}"
+endif
+
+set fn="trigger.html"
+set mb=`head -n1 mb_select`
+
+touch $fn
+rm $fn
+touch $fn
+
+echo "<html>" >> $fn
+echo "<head><title>Trigger Plots</title></head>" >> $fn
+echo "<body bgcolor=#CCFFCC>" >> $fn
+echo '<div style="width:1800px">' >> $fn
+
+echo "<a href=../../trgmon12/200/${fn}>R12:pp200</a>" >> $fn
+echo "&nbsp;-&nbsp;<a href=../../trgmon12/500/${fn}>R12:pp510</a>" >> $fn
+echo "&nbsp;-&nbsp;<a href=../../trgmon13/500/${fn}>R13:pp510</a>" >> $fn
+echo "&nbsp;-&nbsp;<a href=../../trgmon15/200/${fn}>R15:pp200</a>" >> $fn
+echo "&nbsp;-&nbsp;R15:pAu200" >> $fn
+echo "&nbsp;-&nbsp;<a href=../../trgmon16/200/${fn}>R16:pAuAu</a>" >> $fn
+echo "<br /><br />" >> $fn
+
+echo "<a href=runs.html>Run List</a>" >> $fn
+echo "<br /><br /><a href=runlog.root>ROOT file</a>" >> $fn
+echo "<br /><br /><a href=th_plots.pdf>Trigger Thresholds [PDF]</a>" >> $fn
+echo "<br /><br />Note: right click any image and open in a new tab to enlarge" >> $fn
+echo "<br /><br /><b>Trigger Event Plots:</b> nTriggers*ps/(${mb}*ps)" >> $fn
+echo "<ul>" >> $fn
+echo "<li><b>Blue Lines:</b> epoch divider lines (an epoch is a duration with relatively constant trigger events / ${mb})" >> $fn
+echo "<ul>" >> $fn
+echo "<li>epoch line at 551 -- really high bg, some JP triggers removed by shift crew; bad epoch?</li>" >> $fn
+echo "<li>epoch line at 570 -- back to normal</li>" >> $fn
+echo "<li>epoch line at 603 -- Au beam condition changed?</li>" >> $fn
+echo "<li>epoch line at 907 -- all triggers have high rates? bad epoch?</li>" >> $fn
+echo "<li>epoch line at 928 -- back to normal</li>" >> $fn
+echo "<li><b>epoch line at 1315</b> -- switch to pAl (and i12_2015)</li>" >> $fn
+echo "<li><b>epoch line at 1719</b> -- last run; STAR magnet malfunctioned and was off for remainder of run</li>" >> $fn
+echo "</ul>" >> $fn
+echo "<li><b>Black Lines:</b> mean in epoch (either this or exp fit used within each epoch)" >> $fn
+echo "<li><b>Red Lines:</b> exponential fit in epoch (either this or epoch mean used within each epoch)" >> $fn
+echo "<li><b>Red Points:</b> bad epoch; all runs in such an epoch are marked bad" >> $fn
+echo "<ul>" >> $fn
+echo "<li>551-570 -- high bg; some JP triggers removed by shift crew" >> $fn
+echo "<li>907-928 -- unclassified: jump in all trigger rates?" >> $fn
+echo "</ul>" >> $fn
+echo "<li>Outliers that drastically alter epoch means or fits are omitted and marked as bad (listed below)" >> $fn
+echo "</ul>" >> $fn
+echo "<img src=ev_canv.png width=100%/><br />" >> $fn
+echo "<br /><br />" >> $fn
+echo "<br /><b>Normalised Trigger Events Plots:</b> nTriggers*ps/(${mb}*ps*D)<br />" >> $fn
+echo "where D is either the epoch mean or the value of the exponential fit at that run index<br />" >> $fn
+echo "<ul>" >> $fn
+echo "<li><b>Black Lines:</b> Unity" >> $fn
+echo "<li><b>Brown Lines:</b> Cut lines" >> $fn
+echo "<li><b>Blue Lines:</b> Epoch lines copied from above" >> $fn
+echo "<li>Points inside cut lines are marked as good; LED trigger is not used for this QA" >> $fn
+# echo "<li>Other notes:" >> $fn
+  # echo "<ul>" >> $fn
+  # echo "<li> QT2 had stuck bit for runs 14108004-20 (index 222-32)" >> $fn
+  # echo "<li> HT cut lines are generous, since HT events are very low beyond about run 210" >> $fn
+  # echo "</ul>" >> $fn
+echo "</ul>" >> $fn
+echo "<img src=nv_canv.png width=100%/><br />" >> $fn
+echo "<br /><br />" >> $fn
+echo "<br /><b>Trigger Ratios:</b> nTriggers1*ps1/(nTriggers2*ps2)<br />" >> $fn
+echo "<img src=rat_canv.png width=100%/><br />" >> $fn
+echo "<br /><br />" >> $fn
+echo "<br /><b>Trigger Prescales:</b><br />" >> $fn
+echo "<img src=prescale_canv.png width=100%/><br />" >> $fn
+echo "<br /><br />" >> $fn
+echo "<br /><b>Estimated Luminosity:</b> MB*ps/(MB Xsec)<br />" >> $fn
+echo "<img src=lum_canv.png /><br /><br />" >> $fn
+echo "<font face=courier>" >> $fn
+echo "<br /><br />" >> $fn
+cat runindex.txt | sed 's/ /\&nbsp;/g;s/$/<br \/>/g' >> $fn
+echo "<br /><hr /><br />" >> $fn
+echo "Outliers Removed:<br />" >> $fn
+cat outliers.dat | sed 's/ /\&nbsp;/g;s/$/<br \/>/g' >> $fn
+echo "</font>" >> $fn
+echo "</div>" >> $fn
+echo "</body></html>" >> $fn
+echo "---> done building html files"
+echo "---> see runs.html"

@@ -1,0 +1,49 @@
+#!/bin/bash
+# echoes trigger threshholds for a particular run and writes
+# them to a file called th_[run#]
+
+if [ $# -eq 1 ]; then
+  runnum=$1
+else
+  echo "usage: $0 [run number]" >&2
+  exit 1
+fi
+
+year=$(echo $runnum | cut -c1-2)
+let year--
+year="20$year"
+echo "runnum=$runnum"
+#echo "year=$year"
+
+
+# obtain table: [trigger name] [triggerid] [version]
+# these numbers are needed to form the next URL
+mainurl="http://online.star.bnl.gov/RTS/production/triggerApp.php"
+url="$mainurl?screen=trgInfo&run=$runnum"
+curl $url | grep -A4 "FMS.*</a>" | sed 's/<[^>]\+>//g' \
+          | sed 's/--/X/g' | tr '\n' ' ' | tr 'X' '\n' \
+          | awk '{print $1" "$3" "$5}' > trg_$runnum
+#cat trg_$runnum
+
+
+# this loop retrieves trigger threshhold using 
+# individual triggerid pages; I think the threshholds
+# should be the same no matter which page is used, so 
+# this loop is set to only run once via the variable
+# "once" ... comment out lines with "#once" to verify
+# threshhold are the same if you want to
+once=0 #once
+while read line; do
+  if [ $once -eq 0 ]; then
+    trg=$(echo $line | awk '{print $1}')
+    id=$(echo $line | awk '{print $2}')
+    ver=$(echo $line | awk '{print $3}')
+    url="$mainurl?screen=disptriggers&tid=$id&versions=$ver"
+    curl $url | grep -A2 "FMS.*</th>" | sed 's/<[^>]\+>//g' \
+              | sed 's/--/X/g' | tr '\n' ' ' | tr 'X' '\n' \
+              | awk '{print $1" "$3" "$4}' > $trg"_"$runnum
+    once=1 #once
+    mv {$trg,th}"_"$runnum #once
+  fi
+done < trg_$runnum
+

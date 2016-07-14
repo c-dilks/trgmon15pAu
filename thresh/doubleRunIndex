@@ -1,0 +1,13 @@
+#!/bin/bash
+# runs RunIndex.C for runlog{200,500}.root and
+# concatenates a full index.dat file (run# | index# | sqrt(s))
+
+root -b -q 'RunIndex.C("runlog200.root",200)'
+mv index{,200}.dat
+
+root -b -q 'RunIndex.C("runlog500.root",500)'
+mv index{,500}.dat
+
+cat index200.dat > index.dat
+cat index500.dat >> index.dat
+rm index{2,5}00.dat
